@@ -76,7 +76,6 @@ interface UserRepository extends JpaRepository<User, Long> {
 @NoArgsConstructor
 class User {
     @Id
-    @GeneratedValue
     private Long id;
 }
 
