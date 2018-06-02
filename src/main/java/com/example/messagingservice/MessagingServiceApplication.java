@@ -81,4 +81,8 @@ class Connection {
 
     @EmbeddedId
     private ConnectionId id;
+
+    Connection(ConnectionId connection) {
+        this.id = connection;
+    }
 }
