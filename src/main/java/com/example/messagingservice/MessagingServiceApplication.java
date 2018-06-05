@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -145,4 +146,42 @@ class Connection {
     Connection(ConnectionId connection) {
         this.id = connection;
     }
+}
+
+@Entity
+@Data
+@NoArgsConstructor
+class Message {
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    private String subject;
+
+    private String messageBody;
+
+    @ManyToOne
+    @JoinColumn(name = "creator_id", insertable = false, updatable = false)
+    private User creator;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createDate;
+
+}
+
+@Entity
+@Data
+@NoArgsConstructor
+class MessageRecipient {
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "message_id", insertable = false, updatable = false)
+    private Message message;
+
+    @ManyToOne
+    @JoinColumn(name = "recipient_id", insertable = false, updatable = false)
+    private User recipient;
 }
