@@ -98,6 +98,38 @@ class ConnectionController {
     }
 }
 
+@RestController
+class MessageController {
+
+    @Autowired
+    MessageRepository messageRepository;
+
+    @GetMapping("/users/{id}/messages")
+    public ResponseEntity<List<Message>> getMessagesByUserId(@PathVariable(value = "id") Long userId) {
+        List<Message> messages = messageRepository.findMessagesByUserId(userId);
+        return new ResponseEntity<List<Message>>(messages, HttpStatus.OK);
+    }
+
+    @PostMapping("/users/{id}/messages")
+    public ResponseEntity<?> createMessage(@PathVariable(value = "id") Long userId, @RequestBody Message message) {
+        message.setCreator(new User(userId));
+        message.setCreateDate(new Date());
+        System.out.println(message);
+
+        messageRepository.save(message);
+        return new ResponseEntity<Message>(HttpStatus.CREATED);
+    }
+
+
+}
+
+@Repository
+interface MessageRepository extends JpaRepository<Message, Long> {
+    @Query("select m from Message m where m.creator.id = ?1")
+    List<Message> findMessagesByUserId(Long userId);
+
+}
+
 @Repository
 interface ConnectionRepository extends JpaRepository<Connection, Long> {
     @Query("select c.id.connection from Connection c where c.id.user.id = ?1")
@@ -106,6 +138,7 @@ interface ConnectionRepository extends JpaRepository<Connection, Long> {
     @Query("select count(c) from Connection c where c.id.user.id = ?1 and c.id.connection.id = ?2")
     int findConnection(Long userId, Long connectionId);
 }
+
 
 @RepositoryRestResource
 interface UserRepository extends JpaRepository<User, Long> {
@@ -153,7 +186,8 @@ class Connection {
 @NoArgsConstructor
 class Message {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "message_generator")
+    @SequenceGenerator(name="message_generator", sequenceName = "message_seq")
     private Long id;
 
     private String subject;
@@ -161,7 +195,7 @@ class Message {
     private String messageBody;
 
     @ManyToOne
-    @JoinColumn(name = "creator_id", insertable = false, updatable = false)
+    @JoinColumn(name = "creator_id", insertable = true, updatable = false)
     private User creator;
 
     @Temporal(TemporalType.TIMESTAMP)
